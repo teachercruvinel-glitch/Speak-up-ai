@@ -1,0 +1,20 @@
+create table if not exists public.assessments (
+ id uuid primary key default gen_random_uuid(),
+ student_name text not null,
+ created_at timestamptz not null default now(),
+ status text not null default 'submitted',
+ score integer,
+ level text,
+ feedback jsonb
+);
+create table if not exists public.recordings (
+ id uuid primary key default gen_random_uuid(),
+ assessment_id uuid not null references public.assessments(id) on delete cascade,
+ question_index integer not null check (question_index between 0 and 9),
+ storage_path text not null,
+ mime_type text not null,
+ unique (assessment_id,question_index)
+);
+alter table public.assessments enable row level security;
+alter table public.recordings enable row level security;
+-- No public policies: all reads/writes occur through server functions with the service role.
